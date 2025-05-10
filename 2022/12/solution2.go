@@ -1,6 +1,5 @@
 package main
 
-/*
 import (
 	"fmt"
 	"io"
@@ -36,12 +35,32 @@ func main() {
 	for i, row := range tempGrid {
 		grid[i] = []byte(row)
 	}
+	goalRow, goalCol := findByte(grid, 'E')
+	rowStart, colStart := findByte(grid, 'S')
+	grid[rowStart][colStart] = 'a'
+
+	lowest := 1000000000
+
+	for row, gridRow := range grid {
+		for col, char := range gridRow {
+			if char == 'a' {
+				distance := findPath(grid, goalRow, goalCol, row, col)
+				if distance > 0 && distance < lowest {
+					lowest = distance
+				}
+				fmt.Println(distance)
+			}
+		}
+	}
+	fmt.Println(lowest)
+}
+
+func findPath(grid [][]byte, goalRow int, goalCol int, rowStart int, colStart int) int {
 	closedList := make(map[*square]struct{})
 	openList := make(map[*square]struct{})
 
-	row, col := findByte(grid, 'S')
-	start := square{row, col, 0, 0, 0, 97, nil}
-	goalRow, goalCol := findByte(grid, 'E')
+	// row, col := findByte(grid, 'S')
+	start := square{rowStart, colStart, 0, 0, 0, 97, nil}
 	openList[&start] = struct{}{}
 
 	for len(openList) > 0 {
@@ -55,14 +74,14 @@ func main() {
 			for level.parent != nil {
 				level = level.parent
 				depth++
-				grid[level.row][level.col] = byte('#')
+				// grid[level.row][level.col] = byte('#')
 				// fmt.Println(*level)
 			}
-			for _, row := range grid {
+			/*for _, row := range grid {
 				fmt.Println(string(row))
-			}
-			fmt.Println(depth)
-			break
+			}*/
+			// fmt.Println(depth)
+			return depth
 		}
 
 		for i := -2; i < 2; i++ {
@@ -84,6 +103,7 @@ func main() {
 			}
 		}
 	}
+	return -1
 }
 
 func findLowest(arr *map[*square]struct{}) *square {
@@ -122,4 +142,3 @@ func intAbs(i int) int {
 	}
 	return i
 }
-*/
