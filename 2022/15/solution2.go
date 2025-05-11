@@ -24,39 +24,50 @@ func main() {
 		panic(readErr)
 	}
 	lines := strings.Split(strings.ReplaceAll(string(data), "\r\n", "\n"), "\n")
-	const maxXY = 4000000
-	const minXY = 0
-	const targetY = 2000000
-	var occupiedSpaces map[int]struct{} = make(map[int]struct{})
-	var beacons map[int]struct{} = make(map[int]struct{})
 
-	for _, line := range lines {
+	var table [4000000]int
+	var instructions [][]int = make([][]int, len(lines))
+
+	for i, line := range lines {
 		positions := strings.Split(line, ": closest beacon is at x=")
 		senderPosString := strings.Split(positions[0], ", y=")
 		beaconPosString := strings.Split(positions[1], ", y=")
 		var senderX, senderY, beaconX, beaconY int
-		senderX, err = strconv.Atoi(senderPosString[0][12:])
+		senderX, _ = strconv.Atoi(senderPosString[0][12:])
 		beaconX, _ = strconv.Atoi(beaconPosString[0])
 		senderY, _ = strconv.Atoi(senderPosString[1])
 		beaconY, _ = strconv.Atoi(beaconPosString[1])
 
-		if beaconY == targetY {
-			beacons[beaconX] = struct{}{}
-		}
-
 		distBetween := abs(senderX-beaconX) + abs(senderY-beaconY)
-		distToTarget := abs(senderY - targetY)
-		filledRange := distBetween - distToTarget
 
-		// fmt.Println(distBetween, distToTarget, filledRange)
-
-		for i := senderX - filledRange; i <= senderX+filledRange; i++ {
-			occupiedSpaces[i] = struct{}{}
-		}
-
+		instructions[i] = []int{senderX, senderY, distBetween}
 	}
-	fmt.Println(len(occupiedSpaces) - len(beacons))
 
+	for {
+		for i, val := range table {
+			if val >= 4000000 {
+				continue
+			}
+			changed := false
+			for _, instr := range instructions {
+				posX := instr[0]
+				posY := instr[1]
+				radius := instr[2]
+				distToTarget := abs(i - posY)
+				filledRange := radius - distToTarget
+				if posX-filledRange <= val+1 && posX+filledRange > val {
+					table[i] = posX + filledRange
+					changed = true
+				}
+			}
+			// fmt.Println(table)
+			if !changed {
+				fmt.Println("X: " + strconv.Itoa(val+1) + " | Y: " + strconv.Itoa(i))
+				fmt.Println("Tuning value: " + strconv.Itoa((val+1)*4000000+i))
+				return
+			}
+		}
+	}
 }
 
 func abs(x int) int {
